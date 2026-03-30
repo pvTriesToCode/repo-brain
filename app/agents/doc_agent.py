@@ -15,7 +15,7 @@ class AgentState(TypedDict):
 
 def create_llm():
     return ChatGoogleGenerativeAI(
-        model="gemini-pro",
+        model="gemini-1.5-flash",
         google_api_key=settings.gemini_api_key,
         temperature=0.3
     )
