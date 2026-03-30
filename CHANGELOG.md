@@ -2,6 +2,15 @@
 
 **fix: ground agent prompts to prevent file hallucination**
 
+This PR embeds new "CRITICAL RULES" into the `analyze_diff` and `write_changelog` prompts within `app/agents/doc_agent.py` to prevent the AI from hallucinating file names or project structures. Concurrently, `app/services/github_service.py` was updated to enable HTTP redirect following in `get_pr_diff` for more robust GitHub API interactions when fetching PR diffs. These changes enhance the accuracy of agent analyses and changelog generations.
+
+**Files changed:** app/agents/doc_agent.py, app/services/github_service.py
+**Type:** bugfix
+
+## [2026-03-30] - PR #3
+
+**fix: ground agent prompts to prevent file hallucination**
+
 This PR updates the prompt templates in `app/agents/doc_agent.py` for the `analyze_diff` and `write_changelog` functions. It embeds new "CRITICAL RULES" to restrict AI agents to referencing only explicitly visible files and structures in diffs or summaries. This change prevents hallucination, enhancing the accuracy and reliability of generated code analysis and changelog entries.
 
 **Files changed:** app/agents/doc_agent.py
