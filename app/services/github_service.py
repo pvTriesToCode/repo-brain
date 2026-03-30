@@ -10,7 +10,7 @@ class GitHubService:
         }
 
     async def get_pr_diff(self, diff_url: str) -> str:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
                 diff_url,
                 headers={
