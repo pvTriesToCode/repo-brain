@@ -2,6 +2,15 @@
 
 **fix: ground agent prompts to prevent file hallucination**
 
+Refactored agent chat completion by delegating system prompt construction to a new `agentChatCompletionStream` function exported from `src/lib/agent/index.ts`. This stream utilizes `buildGroundingSystemPrompt` from `src/lib/agent/prompt.ts` to create a robust system prompt with explicit instructions. This change, reflected in `src/components/chat/use-chat.ts`, prevents AI hallucination of file names and content by explicitly grounding agent responses.
+
+**Files changed:** src/components/chat/use-chat.ts, src/lib/agent/index.ts, src/lib/agent/prompt.ts
+**Type:** bugfix
+
+## [2026-03-30] - PR #3
+
+**fix: ground agent prompts to prevent file hallucination**
+
 This PR modifies the agent's system prompt generation by dynamically fetching `files` using `get_files_in_directory` based on `agent_config["grounding_directory"]`. These `files` are formatted into an `allowed_files` string, replacing a `repo_name` placeholder in the `system_prompt`. This change grounds the agent with concrete file context, preventing hallucination of non-existent files and improving reliability.
 
 **Files changed:** None explicitly mentioned in summary.
