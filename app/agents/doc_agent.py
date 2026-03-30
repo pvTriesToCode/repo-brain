@@ -25,7 +25,7 @@ Repository: {state['repo_name']}
 Merging: {state['head_branch']} into {state['base_branch']}
 
 Code diff:
-{state['diff'][:8000]}
+{state['diff'][:15000]}
 
 Respond in exactly this markdown format:
 
