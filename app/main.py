@@ -60,7 +60,8 @@ async def webhook(
                 "repo_name": repo_name,
                 "base_branch": base_branch,
                 "head_branch": head_branch,
-                "summary": ""
+                "summary": "",
+                "changelog_entry": ""
             })
 
             await github_service.post_or_update_comment(
@@ -69,6 +70,21 @@ async def webhook(
                 comment=result["summary"]
             )
 
-            print(f"Comment posted to PR #{pr_number}")
+            existing_changelog, sha = await github_service.get_file_content(
+                repo_name=repo_name,
+                file_path="CHANGELOG.md"
+            )
+
+            new_changelog = result["changelog_entry"] + "\n\n" + existing_changelog
+
+            await github_service.update_file_content(
+                repo_name=repo_name,
+                file_path="CHANGELOG.md",
+                content=new_changelog,
+                sha=sha,
+                commit_message=f"docs: update changelog for PR #{pr_number}"
+            )
+
+            print(f"Comment posted and changelog updated for PR #{pr_number}")
 
     return {"status": "received"}

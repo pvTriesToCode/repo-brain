@@ -2,6 +2,7 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 from google import genai
 from app.core.config import settings
+from datetime import datetime
 
 client = genai.Client(api_key=settings.gemini_api_key)
 
@@ -13,6 +14,7 @@ class AgentState(TypedDict):
     base_branch: str
     head_branch: str
     summary: str
+    changelog_entry: str
 
 def analyze_diff(state: AgentState) -> AgentState:
     prompt = f"""You are a senior software engineer reviewing a pull request.
@@ -57,11 +59,48 @@ Respond in exactly this markdown format:
     state["summary"] = response.text
     return state
 
+def write_changelog(state: AgentState) -> AgentState:
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    prompt = f"""You are a technical writer maintaining a project changelog.
+Based on this PR analysis, write a single concise changelog entry.
+
+PR Title: {state['pr_title']}
+PR Number: {state['pr_number']}
+Branch: {state['head_branch']}
+Summary: {state['summary']}
+
+Write a changelog entry in exactly this format:
+
+## [{today}] - PR #{state['pr_number']}
+
+**{state['pr_title']}**
+
+[2-3 sentences describing what changed and why. Be specific and technical but concise.]
+
+**Files changed:** [comma separated list of files]
+**Type:** [one of: feature, bugfix, refactor, docs, chore]
+
+---"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    state["changelog_entry"] = response.text
+    return state
+
 def build_doc_agent():
     workflow = StateGraph(AgentState)
+
     workflow.add_node("analyze_diff", analyze_diff)
+    workflow.add_node("write_changelog", write_changelog)
+
     workflow.set_entry_point("analyze_diff")
-    workflow.add_edge("analyze_diff", END)
+    workflow.add_edge("analyze_diff", "write_changelog")
+    workflow.add_edge("write_changelog", END)
+
     return workflow.compile()
 
 doc_agent = build_doc_agent()

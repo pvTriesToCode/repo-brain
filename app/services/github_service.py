@@ -57,3 +57,29 @@ class GitHubService:
             return await self.update_pr_comment(repo_name, existing_id, comment)
         else:
             return await self.post_pr_comment(repo_name, pr_number, comment)
+        
+    async def get_file_content(self, repo_name: str, file_path: str) -> tuple[str, str]:
+        url = f"{self.base_url}/repos/{repo_name}/contents/{file_path}"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=self.headers)
+            if response.status_code == 404:
+                return "", ""
+            data = response.json()
+            import base64
+            content = base64.b64decode(data["content"]).decode("utf-8")
+            sha = data["sha"]
+            return content, sha
+
+    async def update_file_content(self, repo_name: str, file_path: str, content: str, sha: str, commit_message: str):
+        url = f"{self.base_url}/repos/{repo_name}/contents/{file_path}"
+        import base64
+        encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+        body = {
+            "message": commit_message,
+            "content": encoded,
+        }
+        if sha:
+            body["sha"] = sha
+        async with httpx.AsyncClient() as client:
+            response = await client.put(url, headers=self.headers, json=body)
+            return response.json()
